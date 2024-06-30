@@ -8,11 +8,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="index.js"></script>
     <title>Fetch and Graph CSV</title>
-    <link rel="icon" type="image/x-icon" href="taylor_gif.gif">
-
+    <link rel="icon" type="image/x-icon" href="logo-removebg-preview.png">
 </head>
 <body>
-    <h1>Taylor Swift Songs' Dancability*</h1>
+    <h1>Taylor Swift Songs' Danceability*</h1>
     <h2>Data extracted from Spotify WebAPI on November 6, 2021</h2>
     <p>
         * Danceability = How suitable a track is for dancing based on a combination
@@ -37,100 +36,81 @@
     <script>
         chartIt();
 
-async function getData(){
-    var songName = []
-var danceabilities = []
+        let songNames = [];
+        let danceabilities = [];
 
+        let top1Song = "", top2Song = "", top3Song = "";
+        let top1D = 0, top2D = 0, top3D = 0;
 
+        async function getData() {
+            const response = await fetch("https://raw.githubusercontent.com/IfatNeumann/CsvProject/main/dataSets/0_spotify_taylorswift.csv");
+            const data = await response.text();
+            const table = data.trim().split('\n').slice(1);
 
+            table.forEach(row => {
+                const columns = row.split(',');
+                const songName = columns[1];
+                const danceability = parseFloat(columns[7]);
 
-top1Song = top2Song = top3Song = "";
-top1D = top2D = top3D = 0;
+                songNames.push(songName);
+                danceabilities.push(danceability);
 
+                updateTop3(songName, danceability);
+            });
 
+            document.getElementById("top1").innerHTML = "1. " + top1Song;
+            document.getElementById("top2").innerHTML = "2. " + top2Song;
+            document.getElementById("top3").innerHTML = "3. " + top3Song;
 
-    const response = await fetch("https://raw.githubusercontent.com/IfatNeumann/CsvProject/main/dataSets/0_spotify_taylorswift.csv");
-    console.log(response)
-       const data = await response.text();
-    console.log(data);
-    const table = data.trim().split('\n').slice(1);
-    table.forEach(row => {
-        const columns = row.split(',');
-        const songName = columns[1];
-        songNames.push(songName);
-        const danceability = columns[7];
-        danceabilities.push(danceability);
-
-        updateTop3(songName, danceability);
-        console.log(songName, danceability);
-
-
-     });
-
-     console.log(top1D, top1Song)
-    console.log(top2D, top2Song)
-    console.log(top3D, top3Song)
-    document.getElementById("top1").innerHTML = "1. " + top1Song;
-    document.getElementById("top2").innerHTML = "2. " + top2Song;
-    document.getElementById("top3").innerHTML = "3. " + top3Song;
-    return { songNames, danceabilities };
-
-}
-
-
-
-async function chartIt(){
-    const data = await getData();
-    const ctx = document.getElementById('myChart');
-    ctx.height = 50;
-    const myChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-        labels: data.songNames,
-        datasets: [{
-        label: 'Danceability',
-        data: data.danceabilities,
-        backgroundColor: 'rgba(217, 77, 123, 0.2)',
-        borderColor: 'rgb(217, 77, 123)',
-        borderWidth: 1
-        }]
-    },
-    options: {
-        scales: {
-        y: {
-            beginAtZero: true,
+            return { songNames, danceabilities };
         }
+
+        async function chartIt() {
+            const data = await getData();
+            const ctx = document.getElementById('myChart').getContext('2d');
+            const myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.songNames,
+                    datasets: [{
+                        label: 'Danceability',
+                        data: data.danceabilities,
+                        backgroundColor: 'rgba(217, 77, 123, 0.2)',
+                        borderColor: 'rgb(217, 77, 123)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
         }
-    }
-    });
-}
 
-function updateTop3(songName, danceability){
-    if (danceability>top1D){
-        top3D = top2D
-        top3Song = top2Song
+        function updateTop3(songName, danceability) {
+            if (danceability > top1D) {
+                top3D = top2D;
+                top3Song = top2Song;
 
-        top2D = top1D
-        top2Song = top1Song
+                top2D = top1D;
+                top2Song = top1Song;
 
-        top1D = danceability
-        top1Song = songName
-    }
-    else if (danceability>top2D){
-        top3D = top2D
-        top3Song = top2Song
+                top1D = danceability;
+                top1Song = songName;
+            } else if (danceability > top2D) {
+                top3D = top2D;
+                top3Song = top2Song;
 
-        top2D = danceability
-        top2Song = songName
-    }
-    else if (danceability>top3D){
-        top3D = danceability
-        top3Song = songName
-    }
-
-}
-
-
-</script>
+                top2D = danceability;
+                top2Song = songName;
+            } else if (danceability > top3D) {
+                top3D = danceability;
+                top3Song = songName;
+            }
+        }
+    </script>
 </body>
 </html>
